@@ -155,8 +155,8 @@ export default function MovieWatchlist() {
               <button onClick={() => toggleWatched(movie.id, movie.watched)}>
                 {movie.watched ? "Unwatch" : "Watched"}
               </button>
-              <button onClick={() => removeMovie(movie.id)} className="remove-btn">
-                Remove
+              <button onClick={() => removeMovie(movie.id)} className="trash-icon" title="Delete Movie">
+                <i className="fas fa-trash-alt"></i>
               </button>
             </div>
           </li>
