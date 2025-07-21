@@ -10,7 +10,7 @@ body {
 }
 
 * {
-  box-sizing: inherit;
+  box-sizing: border-box;
 }
 
 .container {
@@ -156,9 +156,17 @@ body {
 @media (max-width: 600px) {
 
   .container {
-    width: 95%;
+    width: 100%;
+    max-width: 100%;
+    padding: 1rem 1rem; /* consistent horizontal padding */
+    margin: 0 auto;      /* horizontal centering */
     min-width: unset;
-    padding: 1rem;
+    box-sizing: border-box;
+  }
+
+  body {
+    padding: 0;
+    margin: 0;
   }
 
   .input-group,
