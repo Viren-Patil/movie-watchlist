@@ -1,11 +1,16 @@
 body {
+  margin: 0;
+  padding: 0;
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  margin: 0;
-  padding: 0;
-  font-size: 1rem;
+  background-color: #222; /* or whatever you're using */
+  box-sizing: border-box;
+}
+
+* {
+  box-sizing: inherit;
 }
 
 .container {
@@ -17,8 +22,8 @@ body {
   background-color: #444;
   border-radius: 8px;
   box-sizing: border-box;
-  margin: 1rem;
 }
+
 
 .title {
   text-align: center;
@@ -149,6 +154,13 @@ body {
 }
 
 @media (max-width: 600px) {
+
+  .container {
+    width: 95%;
+    min-width: unset;
+    padding: 1rem;
+  }
+
   .input-group,
   .filter-group,
   .btn-group {
