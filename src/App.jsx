@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { db } from "./firebase";
+
 import {
   collection,
   getDocs,
@@ -8,7 +9,9 @@ import {
   deleteDoc,
   updateDoc,
   doc,
-  onSnapshot
+  onSnapshot,
+  query,
+  orderBy
 } from "firebase/firestore";
 import "./App.css";
 
@@ -41,7 +44,8 @@ export default function MovieWatchlist() {
   const movieRef = collection(db, "movies");
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(movieRef, (snapshot) => {
+    const q = query(movieRef, orderBy("createdAt"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
       const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setMovies(data);
     });
@@ -56,6 +60,7 @@ export default function MovieWatchlist() {
       genre: genre.trim(),
       watched: false,
       poster: poster || null,
+      createdAt: new Date(),
     });
     setNewMovie("");
     setGenre("");
@@ -91,7 +96,7 @@ export default function MovieWatchlist() {
 
   return (
     <div className="container">
-      <h1 className="title">Our Movie Date List 💕</h1>
+      <h1 className="title">Aditi & Viren's Movie WatchList 💕</h1>
 
       <div className="input-group">
         <input
