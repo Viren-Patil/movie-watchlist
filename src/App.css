@@ -5,7 +5,6 @@ body {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: #222; /* or whatever you're using */
   box-sizing: border-box;
 }
 
