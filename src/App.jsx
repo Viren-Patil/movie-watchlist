@@ -152,8 +152,8 @@ export default function MovieWatchlist() {
               </div>
             </div>
             <div className="btn-group">
-              <button onClick={() => toggleWatched(movie.id, movie.watched)}>
-                {movie.watched ? "Unwatch" : "Watched"}
+              <button onClick={() => toggleWatched(movie.id, movie.watched)} title={movie.watched ? "Mark as Unwatched" : "Mark as Watched"}>
+                <i className={`fas ${movie.watched ? "fa-eye" : "fa-eye-slash"}`}></i>
               </button>
               <button onClick={() => removeMovie(movie.id)} className="trash-icon" title="Delete Movie">
                 <i className="fas fa-trash-alt"></i>

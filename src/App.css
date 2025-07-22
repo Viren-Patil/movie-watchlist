@@ -160,6 +160,23 @@ body {
   box-sizing: border-box;
 }
 
+.btn-group .fa-check-circle {
+  color: limegreen;
+}
+
+.btn-group .fa-clock {
+  color: goldenrod;
+}
+
+.btn-group .fa-eye {
+  color: dodgerblue;
+}
+
+.btn-group .fa-eye-slash {
+  color: gray;
+}
+
+
 @media (max-width: 600px) {
 
   .container {
