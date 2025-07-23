@@ -63,7 +63,8 @@ export default function MovieWatchlist() {
       createdAt: new Date(),
       rating: 0,
       note: "",
-      watchedDate: ""
+      watchedDate: "",
+      wishlist: false
     });
     setNewMovie("");
     setGenre("");
@@ -79,6 +80,11 @@ export default function MovieWatchlist() {
       note: newWatched ? "" : "",
       watchedDate
     });
+  };
+
+  const toggleWishlist = async (id, currentState) => {
+    const ref = doc(db, "movies", id);
+    await updateDoc(ref, { wishlist: !currentState });
   };
 
   const updateRating = async (id, rating) => {
@@ -113,7 +119,11 @@ export default function MovieWatchlist() {
 
   const filteredMovies = movies.filter((movie) => {
     const matchesStatus =
-      filter === "watched" ? movie.watched : filter === "unwatched" ? !movie.watched : true;
+      filter === "watched" ? movie.watched :
+      filter === "unwatched" ? !movie.watched :
+      filter === "wishlist" ? movie.wishlist :
+      true;
+
     const matchesGenre = genreFilter === "all" || movie.genre === genreFilter;
     const matchesSearch = movie.title.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesStatus && matchesGenre && matchesSearch;
@@ -147,11 +157,12 @@ export default function MovieWatchlist() {
           onChange={(e) => setSearchTerm(e.target.value)}
           className="search-bar"
         />
-        <label>Status:</label>
+        <label>Filter:</label>
         <select value={filter} onChange={(e) => setFilter(e.target.value)}>
           <option value="all">All</option>
           <option value="unwatched">Unwatched</option>
           <option value="watched">Watched</option>
+          <option value="wishlist">Wishlist</option>
         </select>
 
         <label>Genre:</label>
@@ -219,6 +230,9 @@ export default function MovieWatchlist() {
               </div>
             </div>
             <div className="btn-group">
+              <button onClick={() => toggleWishlist(movie.id, movie.wishlist)} title={movie.wishlist ? "Remove from Wishlist" : "Add to Wishlist"}>
+                <i className={`fas fa-heart`} style={{ color: movie.wishlist ? "deeppink" : "lightgray" }}></i>
+              </button>
               <button onClick={() => toggleWatched(movie.id, movie.watched)} title={movie.watched ? "Mark as Unwatched" : "Mark as Watched"}>
                 <i className={`fas ${movie.watched ? "fa-eye" : "fa-eye-slash"}`}></i>
               </button>

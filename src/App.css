@@ -8,6 +8,18 @@ body {
   box-sizing: border-box;
 }
 
+button {
+  border: none;
+}
+
+button:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  box-shadow: none;
+}
+
 * {
   box-sizing: border-box;
   user-select: none;
@@ -125,6 +137,7 @@ textarea {
 .btn-group button {
   padding: 0.3rem 0.6rem;
   cursor: pointer;
+  border: none;
 }
 
 .trash-icon {
@@ -164,7 +177,7 @@ textarea {
 }
 
 .poster {
-  width: 60px;
+  width: 100px;
   height: auto;
   border-radius: 4px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
@@ -197,6 +210,15 @@ textarea {
   color: gray;
 }
 
+.btn-group .fa-heart {
+  transition: transform 0.2s ease;
+}
+
+.btn-group .fa-heart:hover {
+  transform: scale(1.2);
+}
+
+
 .reactions {
   display: flex;
   gap: 0.5rem;
@@ -222,7 +244,7 @@ textarea {
 .rating-stars {
   display: flex;
   gap: 0.2rem;
-  font-size: 1.3rem;
+  font-size: 1rem;
   color: gold;
   margin-top: 0.4rem;
   cursor: pointer;
