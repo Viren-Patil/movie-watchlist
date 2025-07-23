@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
-import { v4 as uuidv4 } from "uuid";
 import { db } from "./firebase";
-
 import {
   collection,
   getDocs,
@@ -15,7 +13,7 @@ import {
 } from "firebase/firestore";
 import "./App.css";
 
-const TMDB_API_KEY = "25de9489980ba604df19fc1bdb818beb"; // optional: you can fill this again later
+const TMDB_API_KEY = "25de9489980ba604df19fc1bdb818beb";
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w200";
 
@@ -40,6 +38,8 @@ export default function MovieWatchlist() {
   const [genreFilter, setGenreFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [showSecret, setShowSecret] = useState(false);
+  const [noteInputs, setNoteInputs] = useState({});
+  const [dateInputs, setDateInputs] = useState({});
 
   const movieRef = collection(db, "movies");
 
@@ -61,6 +61,9 @@ export default function MovieWatchlist() {
       watched: false,
       poster: poster || null,
       createdAt: new Date(),
+      rating: 0,
+      note: "",
+      watchedDate: ""
     });
     setNewMovie("");
     setGenre("");
@@ -68,7 +71,29 @@ export default function MovieWatchlist() {
 
   const toggleWatched = async (id, watched) => {
     const ref = doc(db, "movies", id);
-    await updateDoc(ref, { watched: !watched });
+    const newWatched = !watched;
+    const watchedDate = newWatched ? (dateInputs[id] || new Date().toISOString().split("T")[0]) : "";
+    await updateDoc(ref, {
+      watched: newWatched,
+      rating: newWatched ? 0 : 0,
+      note: newWatched ? "" : "",
+      watchedDate
+    });
+  };
+
+  const updateRating = async (id, rating) => {
+    const ref = doc(db, "movies", id);
+    await updateDoc(ref, { rating });
+  };
+
+  const updateNote = async (id, note) => {
+    const ref = doc(db, "movies", id);
+    await updateDoc(ref, { note });
+  };
+
+  const updateWatchedDate = async (id, date) => {
+    const ref = doc(db, "movies", id);
+    await updateDoc(ref, { watchedDate: date });
   };
 
   const removeMovie = async (id) => {
@@ -149,6 +174,48 @@ export default function MovieWatchlist() {
                 <strong>{movie.title}</strong>{" "}
                 {movie.genre && <em>({movie.genre})</em>}
                 {movie.watched && " ✅"}
+                {movie.watched && (
+                  <div className="watched-date">
+                    Watched on:
+                    <input
+                      type="date"
+                      value={movie.watchedDate || new Date().toISOString().split("T")[0]}
+                      max={new Date().toISOString().split("T")[0]}
+                      onChange={(e) => {
+                        setDateInputs({ ...dateInputs, [movie.id]: e.target.value });
+                        updateWatchedDate(movie.id, e.target.value);
+                      }}
+                      className="watched-date-picker"
+                    />
+                  </div>
+                )}
+                {movie.watched && (
+                  <div className="rating-stars">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <i
+                        key={star}
+                        className={`fa-star ${star <= movie.rating ? "fas" : "far"}`}
+                        onClick={() => updateRating(movie.id, star)}
+                        title={`Rate ${star} star${star > 1 ? "s" : ""}`}
+                      ></i>
+                    ))}
+                  </div>
+                )}
+                {movie.watched && (
+                  <details>
+                    <summary className="note-summary">
+                      Notes / Review
+                    </summary>
+                    <textarea
+                      rows="2"
+                      value={noteInputs[movie.id] ?? movie.note ?? ""}
+                      onChange={(e) => setNoteInputs({ ...noteInputs, [movie.id]: e.target.value })}
+                      onBlur={() => updateNote(movie.id, noteInputs[movie.id] ?? "")}
+                      className="note-textarea"
+                      placeholder="Add your note here..."
+                    ></textarea>
+                  </details>
+                )}
               </div>
             </div>
             <div className="btn-group">
