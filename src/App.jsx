@@ -40,6 +40,8 @@ export default function MovieWatchlist() {
   const [showSecret, setShowSecret] = useState(false);
   const [noteInputs, setNoteInputs] = useState({});
   const [dateInputs, setDateInputs] = useState({});
+  const [sortOption, setSortOption] = useState("date-desc");
+
 
   const movieRef = collection(db, "movies");
 
@@ -129,6 +131,21 @@ export default function MovieWatchlist() {
     return matchesStatus && matchesGenre && matchesSearch;
   });
 
+  const sortedMovies = [...filteredMovies].sort((a, b) => {
+    switch (sortOption) {
+      case "title-asc":
+        return a.title.localeCompare(b.title);
+      case "title-desc":
+        return b.title.localeCompare(a.title);
+      case "date-asc":
+        return new Date(a.createdAt?.toDate?.() ?? a.createdAt) - new Date(b.createdAt?.toDate?.() ?? b.createdAt);
+      case "date-desc":
+      default:
+        return new Date(b.createdAt?.toDate?.() ?? b.createdAt) - new Date(a.createdAt?.toDate?.() ?? a.createdAt);
+    }
+  });
+
+
   return (
     <div className="container">
       <h1 className="title">Aditi & Viren's Movie WatchList 💕</h1>
@@ -150,13 +167,6 @@ export default function MovieWatchlist() {
       </div>
 
       <div className="filter-group">
-        <input
-          type="text"
-          placeholder="Search by title"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="search-bar"
-        />
         <label>Filter:</label>
         <select value={filter} onChange={(e) => setFilter(e.target.value)}>
           <option value="all">All</option>
@@ -172,12 +182,26 @@ export default function MovieWatchlist() {
             <option key={g} value={g}>{g}</option>
           ))}
         </select>
+
+        <label>Sort by:</label>
+        <select value={sortOption} onChange={(e) => setSortOption(e.target.value)}>
+          <option value="title-asc">Title (A–Z)</option>
+          <option value="title-desc">Title (Z–A)</option>
+          <option value="date-asc">Date Added (Oldest)</option>
+          <option value="date-desc">Date Added (Newest)</option>
+        </select>
       </div>
 
-      <button onClick={clearAll}>Clear All</button>
-
+      <input
+        type="text"
+        placeholder="Search by title"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="search-bar"
+      />
+      
       <ul className="movie-list">
-        {filteredMovies.map((movie) => (
+        {sortedMovies.map((movie) => (
           <li key={movie.id} className="movie-item">
             <div className="movie-details">
               {movie.poster && <img src={movie.poster} alt={`${movie.title} poster`} className="poster" />}
