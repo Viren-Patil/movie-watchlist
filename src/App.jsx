@@ -1,3 +1,4 @@
+import confetti from "canvas-confetti";
 import { useState, useEffect } from "react";
 import { db } from "./firebase";
 import {
@@ -16,6 +17,25 @@ import "./App.css";
 const TMDB_API_KEY = "25de9489980ba604df19fc1bdb818beb";
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w200";
+
+async function fetchTrailer(title) {
+  const searchUrl = `${TMDB_BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(title)}`;
+  try {
+    const searchRes = await fetch(searchUrl);
+    const searchData = await searchRes.json();
+    const movieId = searchData.results?.[0]?.id;
+    if (!movieId) return null;
+
+    const videoUrl = `${TMDB_BASE_URL}/movie/${movieId}/videos?api_key=${TMDB_API_KEY}`;
+    const videoRes = await fetch(videoUrl);
+    const videoData = await videoRes.json();
+    const trailer = videoData.results.find(v => v.type === "Trailer" && v.site === "YouTube");
+    return trailer ? `https://www.youtube.com/embed/${trailer.key}` : null;
+  } catch (err) {
+    console.error("Error fetching trailer:", err);
+    return null;
+  }
+}
 
 async function fetchPoster(title) {
   const url = `${TMDB_BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(title)}`;
@@ -41,9 +61,24 @@ export default function MovieWatchlist() {
   const [noteInputs, setNoteInputs] = useState({});
   const [dateInputs, setDateInputs] = useState({});
   const [sortOption, setSortOption] = useState("date-desc");
+  const [trailerUrl, setTrailerUrl] = useState(null);
 
 
   const movieRef = collection(db, "movies");
+
+  const openTrailer = async (title) => {
+    const url = await fetchTrailer(title);
+    if (url) {
+      setTrailerUrl(url);
+    } else {
+      alert("Trailer not found.");
+    }
+  };
+
+  const closeTrailer = () => {
+    setTrailerUrl(null);
+  };
+
 
   useEffect(() => {
     const q = query(movieRef, orderBy("createdAt"));
@@ -82,6 +117,22 @@ export default function MovieWatchlist() {
       note: newWatched ? "" : "",
       watchedDate
     });
+
+    if (newWatched) {
+      confetti({
+        particleCount: 60,
+        angle: 45,
+        spread: 60,
+        origin: { x: 0, y: 1 }
+      });
+
+      confetti({
+        particleCount: 60,
+        angle: 135,
+        spread: 60,
+        origin: { x: 1, y: 1 }
+      });
+    }
   };
 
   const toggleWishlist = async (id, currentState) => {
@@ -192,14 +243,17 @@ export default function MovieWatchlist() {
         </select>
       </div>
 
-      <input
-        type="text"
-        placeholder="Search by title"
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        className="search-bar"
-      />
-      
+      <div className="search-wrapper">
+        <i className="fas fa-search search-icon"></i>
+        <input
+          type="text"
+          placeholder="Search by title"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="search-bar"
+        />
+      </div>
+
       <ul className="movie-list">
         {sortedMovies.map((movie) => (
           <li key={movie.id} className="movie-item">
@@ -254,6 +308,9 @@ export default function MovieWatchlist() {
               </div>
             </div>
             <div className="btn-group">
+              <button onClick={() => openTrailer(movie.title)} title="Watch Trailer">
+                <i className="fas fa-film"></i>
+              </button>
               <button onClick={() => toggleWishlist(movie.id, movie.wishlist)} title={movie.wishlist ? "Remove from Wishlist" : "Add to Wishlist"}>
                 <i className={`fas fa-heart`} style={{ color: movie.wishlist ? "deeppink" : "lightgray" }}></i>
               </button>
@@ -278,6 +335,24 @@ export default function MovieWatchlist() {
           </p>
         )}
       </div>
+
+      {trailerUrl && (
+        <div className="trailer-modal" onClick={closeTrailer}>
+          <div className="trailer-content" onClick={e => e.stopPropagation()}>
+            <iframe
+              src={trailerUrl}
+              width="100%"
+              height="400"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              title="Movie Trailer"
+            ></iframe>
+            <button onClick={closeTrailer} className="close-trailer-btn">Close</button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
