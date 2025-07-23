@@ -62,7 +62,10 @@ export default function MovieWatchlist() {
   const [dateInputs, setDateInputs] = useState({});
   const [sortOption, setSortOption] = useState("date-desc");
   const [trailerUrl, setTrailerUrl] = useState(null);
-
+  const [gameMovie, setGameMovie] = useState(null);
+  const [guess, setGuess] = useState("");
+  const [gameResult, setGameResult] = useState("");
+  const [showGame, setShowGame] = useState(false);
 
   const movieRef = collection(db, "movies");
 
@@ -79,6 +82,16 @@ export default function MovieWatchlist() {
     setTrailerUrl(null);
   };
 
+  const startGuessGame = () => {
+    const watchedMovies = movies.filter((m) => m.watched && m.poster);
+    if (watchedMovies.length === 0) return alert("No watched movies with posters!");
+
+    const random = watchedMovies[Math.floor(Math.random() * watchedMovies.length)];
+    setGameMovie(random);
+    setGuess("");
+    setGameResult("");
+    setShowGame(true);
+  };
 
   useEffect(() => {
     const q = query(movieRef, orderBy("createdAt"));
@@ -199,8 +212,12 @@ export default function MovieWatchlist() {
 
   return (
     <div className="container">
+      <div className="guess-game-wrapper">
+        <button className="guess-game-btn" onClick={startGuessGame}>
+          <i className="fas fa-gamepad"></i>
+        </button>
+      </div>
       <h1 className="title">Aditi & Viren's Movie WatchList 💕</h1>
-
       <div className="input-group">
         <input
           type="text"
@@ -335,6 +352,41 @@ export default function MovieWatchlist() {
           </p>
         )}
       </div>
+
+      {showGame && gameMovie && (
+        <div className="game-modal" onClick={() => setShowGame(false)}>
+          <div className="game-content" onClick={(e) => e.stopPropagation()}>
+            <h3>Guess the Movie</h3>
+            <img
+              src={gameMovie.poster}
+              alt="Guess this movie"
+              className={`game-poster ${gameResult === "correct" ? "unblurred" : "blurred"}`}
+            />
+            <input
+              type="text"
+              placeholder="Your guess..."
+              value={guess}
+              onChange={(e) => setGuess(e.target.value)}
+              className="guess-input"
+            />
+            <button className="guess-submit-btn"
+              onClick={() => {
+                const isCorrect = guess.trim().toLowerCase() === gameMovie.title.toLowerCase();
+                setGameResult(isCorrect ? "correct" : "wrong");
+              }}
+            >
+              Submit
+            </button>
+            {gameResult && (
+              <p className={gameResult === "correct" ? "correct-msg" : "wrong-msg"}>
+                {gameResult === "correct" ? "🎉 Correct!" : "❌ Try again!"}
+              </p>
+            )}
+            <button onClick={() => startGuessGame()} className="guess-submit-btn">New Poster</button>
+            <button onClick={() => setShowGame(false)} className="guess-close-btn">Close</button>
+          </div>
+        </div>
+      )}
 
       {trailerUrl && (
         <div className="trailer-modal" onClick={closeTrailer}>
