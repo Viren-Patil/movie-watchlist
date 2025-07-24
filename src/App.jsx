@@ -196,6 +196,8 @@ export default function MovieWatchlist() {
     return matchesStatus && matchesGenre && matchesSearch;
   });
 
+
+
   const sortedMovies = [...filteredMovies].sort((a, b) => {
     switch (sortOption) {
       case "title-asc":
@@ -209,6 +211,10 @@ export default function MovieWatchlist() {
         return new Date(b.createdAt?.toDate?.() ?? b.createdAt) - new Date(a.createdAt?.toDate?.() ?? a.createdAt);
     }
   });
+
+  const totalMovies = movies.length;
+  const watchedMovies = movies.filter((m) => m.watched).length;
+  const overallProgress = totalMovies ? (watchedMovies / totalMovies) * 100 : 0;
 
 
   return (
@@ -234,6 +240,20 @@ export default function MovieWatchlist() {
         />
         <button onClick={addMovie}>Add to list</button>
       </div>
+
+      {totalMovies > 0 && (
+        <div className="overall-progress-container">
+          <div className="overall-progress-label">
+            Watched {watchedMovies} / {totalMovies} movies
+          </div>
+          <div className="overall-progress-bar">
+            <div
+              className="overall-progress-fill"
+              style={{ width: `${overallProgress}%` }}
+            ></div>
+          </div>
+        </div>
+      )}
 
       <div className="filter-group">
         <label>Filter:</label>
