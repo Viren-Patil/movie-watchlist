@@ -66,6 +66,7 @@ export default function MovieWatchlist() {
   const [guess, setGuess] = useState("");
   const [gameResult, setGameResult] = useState("");
   const [showGame, setShowGame] = useState(false);
+  const [scrapbookMode, setScrapbookMode] = useState(false);
 
   const movieRef = collection(db, "movies");
 
@@ -269,78 +270,101 @@ export default function MovieWatchlist() {
           onChange={(e) => setSearchTerm(e.target.value)}
           className="search-bar"
         />
+        <button
+          onClick={() => setScrapbookMode(!scrapbookMode)}
+          className="view-toggle-btn"
+          title={scrapbookMode ? "List View" : "Scrapbook View"}
+        >
+          <i className={`fas ${scrapbookMode ? "fa-list" : "fa-th"}`}></i>
+        </button>
       </div>
-
-      <ul className="movie-list">
-        {sortedMovies.map((movie) => (
-          <li key={movie.id} className="movie-item">
-            <div className="movie-details">
-              {movie.poster && <img src={movie.poster} alt={`${movie.title} poster`} className="poster" />}
-              <div>
-                <strong>{movie.title}</strong>{" "}
-                {movie.genre && <em>({movie.genre})</em>}
-                {movie.watched && " ✅"}
-                {movie.watched && (
-                  <div className="watched-date">
-                    Watched on:
-                    <input
-                      type="date"
-                      value={movie.watchedDate || new Date().toISOString().split("T")[0]}
-                      max={new Date().toISOString().split("T")[0]}
-                      onChange={(e) => {
-                        setDateInputs({ ...dateInputs, [movie.id]: e.target.value });
-                        updateWatchedDate(movie.id, e.target.value);
-                      }}
-                      className="watched-date-picker"
-                    />
-                  </div>
-                )}
-                {movie.watched && (
-                  <div className="rating-stars">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <i
-                        key={star}
-                        className={`fa-star ${star <= movie.rating ? "fas" : "far"}`}
-                        onClick={() => updateRating(movie.id, star)}
-                        title={`Rate ${star} star${star > 1 ? "s" : ""}`}
-                      ></i>
-                    ))}
-                  </div>
-                )}
-                {movie.watched && (
-                  <details>
-                    <summary className="note-summary">
-                      Notes / Review
-                    </summary>
-                    <textarea
-                      rows="2"
-                      value={noteInputs[movie.id] ?? movie.note ?? ""}
-                      onChange={(e) => setNoteInputs({ ...noteInputs, [movie.id]: e.target.value })}
-                      onBlur={() => updateNote(movie.id, noteInputs[movie.id] ?? "")}
-                      className="note-textarea"
-                      placeholder="Add your note here..."
-                    ></textarea>
-                  </details>
-                )}
+        
+      {scrapbookMode ? (
+        <div className="scrapbook-grid">
+          {sortedMovies.map((movie) => (
+            <div key={movie.id} className="poster-tile">
+              {movie.poster && <img src={movie.poster} alt={movie.title} className="poster-img" />}
+              <div className="poster-hover">
+                <strong>{movie.title}</strong>
+                {movie.genre && <p>{movie.genre}</p>}
+                {movie.rating > 0 && <p>⭐ {movie.rating}/5</p>}
+                {movie.watchedDate && <p>{movie.watchedDate}</p>}
               </div>
             </div>
-            <div className="btn-group">
-              <button onClick={() => openTrailer(movie.title)} title="Watch Trailer">
-                <i className="fas fa-film"></i>
-              </button>
-              <button onClick={() => toggleWishlist(movie.id, movie.wishlist)} title={movie.wishlist ? "Remove from Wishlist" : "Add to Wishlist"}>
-                <i className={`fas fa-heart`} style={{ color: movie.wishlist ? "deeppink" : "lightgray" }}></i>
-              </button>
-              <button onClick={() => toggleWatched(movie.id, movie.watched)} title={movie.watched ? "Mark as Unwatched" : "Mark as Watched"}>
-                <i className={`fas ${movie.watched ? "fa-eye" : "fa-eye-slash"}`}></i>
-              </button>
-              <button onClick={() => removeMovie(movie.id)} className="trash-icon" title="Delete Movie">
-                <i className="fas fa-trash-alt"></i>
-              </button>
-            </div>
-          </li>
-        ))}
-      </ul>
+          ))}
+        </div>
+      ) : (
+        <ul className="movie-list">
+          {sortedMovies.map((movie) => (
+            <li key={movie.id} className="movie-item">
+              <div className="movie-details">
+                {movie.poster && <img src={movie.poster} alt={`${movie.title} poster`} className="poster" />}
+                <div>
+                  <strong>{movie.title}</strong>{" "}
+                  {movie.genre && <em>({movie.genre})</em>}
+                  {movie.watched && " ✅"}
+                  {movie.watched && (
+                    <div className="watched-date">
+                      Watched on:
+                      <input
+                        type="date"
+                        value={movie.watchedDate || new Date().toISOString().split("T")[0]}
+                        max={new Date().toISOString().split("T")[0]}
+                        onChange={(e) => {
+                          setDateInputs({ ...dateInputs, [movie.id]: e.target.value });
+                          updateWatchedDate(movie.id, e.target.value);
+                        }}
+                        className="watched-date-picker"
+                      />
+                    </div>
+                  )}
+                  {movie.watched && (
+                    <div className="rating-stars">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <i
+                          key={star}
+                          className={`fa-star ${star <= movie.rating ? "fas" : "far"}`}
+                          onClick={() => updateRating(movie.id, star)}
+                          title={`Rate ${star} star${star > 1 ? "s" : ""}`}
+                        ></i>
+                      ))}
+                    </div>
+                  )}
+                  {movie.watched && (
+                    <details>
+                      <summary className="note-summary">
+                        Notes / Review
+                      </summary>
+                      <textarea
+                        rows="2"
+                        value={noteInputs[movie.id] ?? movie.note ?? ""}
+                        onChange={(e) => setNoteInputs({ ...noteInputs, [movie.id]: e.target.value })}
+                        onBlur={() => updateNote(movie.id, noteInputs[movie.id] ?? "")}
+                        className="note-textarea"
+                        placeholder="Add your note here..."
+                      ></textarea>
+                    </details>
+                  )}
+                </div>
+              </div>
+              <div className="btn-group">
+                <button onClick={() => openTrailer(movie.title)} title="Watch Trailer">
+                  <i className="fas fa-film"></i>
+                </button>
+                <button onClick={() => toggleWishlist(movie.id, movie.wishlist)} title={movie.wishlist ? "Remove from Wishlist" : "Add to Wishlist"}>
+                  <i className={`fas fa-heart`} style={{ color: movie.wishlist ? "deeppink" : "lightgray" }}></i>
+                </button>
+                <button onClick={() => toggleWatched(movie.id, movie.watched)} title={movie.watched ? "Mark as Unwatched" : "Mark as Watched"}>
+                  <i className={`fas ${movie.watched ? "fa-eye" : "fa-eye-slash"}`}></i>
+                </button>
+                <button onClick={() => removeMovie(movie.id)} className="trash-icon" title="Delete Movie">
+                  <i className="fas fa-trash-alt"></i>
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
 
       <div className="secret-wrapper">
         <span className="secret-trigger" onClick={() => setShowSecret(!showSecret)}>
