@@ -238,7 +238,9 @@ export default function MovieWatchlist() {
           value={genre}
           onChange={(e) => setGenre(e.target.value)}
         />
-        <button onClick={addMovie}>Add to list</button>
+        <button onClick={addMovie} title="Add Movie">
+          <i className="fas fa-plus"></i>
+        </button>
       </div>
 
       {totalMovies > 0 && (
