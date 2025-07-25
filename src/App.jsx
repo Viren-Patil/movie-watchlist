@@ -67,6 +67,11 @@ export default function MovieWatchlist() {
   const [gameResult, setGameResult] = useState("");
   const [showGame, setShowGame] = useState(false);
   const [scrapbookMode, setScrapbookMode] = useState(false);
+  const [genreMap, setGenreMap] = useState({});
+  const [searchResults, setSearchResults] = useState([]);
+  const [showSearchModal, setShowSearchModal] = useState(false);
+
+
 
   const movieRef = collection(db, "movies");
 
@@ -101,6 +106,21 @@ export default function MovieWatchlist() {
       setMovies(data);
     });
     return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    async function loadGenres() {
+      try {
+        const res = await fetch(`${TMDB_BASE_URL}/genre/movie/list?api_key=${TMDB_API_KEY}`);
+        const data = await res.json();
+        const map = {};
+        data.genres.forEach(g => map[g.id] = g.name);
+        setGenreMap(map);
+      } catch (err) {
+        console.error("Failed to fetch genre list", err);
+      }
+    }
+    loadGenres();
   }, []);
 
   const addMovie = async () => {
@@ -182,7 +202,19 @@ export default function MovieWatchlist() {
     }
   };
 
-  const uniqueGenres = Array.from(new Set(movies.map((m) => m.genre).filter(Boolean)));
+  const genreSet = new Set();
+
+  movies.forEach((movie) => {
+    if (movie.genre) {
+      movie.genre
+        .split(",")
+        .map((g) => g.trim())
+        .forEach((g) => genreSet.add(g));
+    }
+  });
+
+  const uniqueGenres = Array.from(genreSet);
+
 
   const filteredMovies = movies.filter((movie) => {
     const matchesStatus =
@@ -191,7 +223,9 @@ export default function MovieWatchlist() {
       filter === "wishlist" ? movie.wishlist :
       true;
 
-    const matchesGenre = genreFilter === "all" || movie.genre === genreFilter;
+    const matchesGenre =
+      genreFilter === "all" ||
+      (movie.genre && movie.genre.split(",").some(g => g.trim() === genreFilter));
     const matchesSearch = movie.title.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesStatus && matchesGenre && matchesSearch;
   });
@@ -228,18 +262,21 @@ export default function MovieWatchlist() {
       <div className="input-group">
         <input
           type="text"
-          placeholder="Movie title"
+          placeholder="Search movie title"
           value={newMovie}
           onChange={(e) => setNewMovie(e.target.value)}
         />
-        <input
-          type="text"
-          placeholder="Genre (optional)"
-          value={genre}
-          onChange={(e) => setGenre(e.target.value)}
-        />
-        <button onClick={addMovie} title="Add Movie">
-          <i className="fas fa-plus"></i>
+        <button
+          onClick={async () => {
+            if (!newMovie.trim()) return;
+            const res = await fetch(`${TMDB_BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(newMovie.trim())}`);
+            const data = await res.json();
+            setSearchResults(data.results || []);
+            setShowSearchModal(true);
+          }}
+          title="Search Movies"
+        >
+          <i className="fas fa-search"></i>
         </button>
       </div>
 
@@ -447,6 +484,67 @@ export default function MovieWatchlist() {
               title="Movie Trailer"
             ></iframe>
             <button onClick={closeTrailer} className="close-trailer-btn">Close</button>
+          </div>
+        </div>
+      )}
+
+      {showSearchModal && (
+        <div className="movie-select-modal" onClick={() => setShowSearchModal(false)}>
+          <div className="movie-select-content" onClick={(e) => e.stopPropagation()}>
+            <h3>Select a Movie</h3>
+            {searchResults.length > 0 ? (
+              <div className="scrapbook-grid">
+                {searchResults.map((movie) => (
+                  <div key={movie.id} className="poster-tile" onClick={async () => {
+                    const genreNames = (movie.genre_ids || [])
+                      .map(id => genreMap[id])
+                      .filter(Boolean)
+                      .join(", ");
+
+                    await addDoc(movieRef, {
+                      title: movie.title,
+                      genre: genreNames,
+                      releaseYear: movie.release_date?.split("-")[0] || "",
+                      poster: movie.poster_path
+                        ? `${TMDB_IMAGE_BASE}${movie.poster_path}`
+                        : null,
+                      watched: false,
+                      createdAt: new Date(),
+                      rating: 0,
+                      note: "",
+                      watchedDate: "",
+                      wishlist: false
+                    });
+
+                    setShowSearchModal(false);
+                    setNewMovie("");
+                    setSearchResults([]);
+                  }}>
+                    {movie.poster_path ? (
+                      <img
+                        src={`${TMDB_IMAGE_BASE}${movie.poster_path}`}
+                        alt={movie.title}
+                        className="poster-img"
+                      />
+                    ) : (
+                      <div className="poster-img" style={{ background: "#999", height: "180px" }}>No Image</div>
+                    )}
+                    <div className="poster-hover">
+                      <strong>{movie.title}</strong>
+                      {movie.release_date && (
+                        <p>{movie.release_date.split("-")[0]}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p style={{ textAlign: "center", margin: "2rem 0", color: "#ccc" }}>
+                No results found.
+              </p>
+            )}
+
+            <button className="guess-close-btn" onClick={() => setShowSearchModal(false)}>Cancel</button>
           </div>
         </div>
       )}
