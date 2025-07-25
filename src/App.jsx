@@ -345,9 +345,10 @@ export default function MovieWatchlist() {
               {movie.poster && <img src={movie.poster} alt={movie.title} className="poster-img" />}
               <div className="poster-hover">
                 <strong>{movie.title}</strong>
+                {movie.releaseYear && <p>{movie.releaseYear}</p>}
                 {movie.genre && <p>{movie.genre}</p>}
                 {movie.rating > 0 && <p>⭐ {movie.rating}/5</p>}
-                {movie.watchedDate && <p>{movie.watchedDate}</p>}
+                {movie.watchedDate && <p>{movie.watchedDate} 👁️</p>}
               </div>
             </div>
           ))}
@@ -359,7 +360,14 @@ export default function MovieWatchlist() {
               <div className="movie-details">
                 {movie.poster && <img src={movie.poster} alt={`${movie.title} poster`} className="poster" />}
                 <div>
-                  <strong>{movie.title}</strong>{" "}
+                  <strong>
+                    {movie.title}
+                    {movie.releaseYear && (
+                      <span style={{ color: "#aaa", fontWeight: "normal", marginLeft: "0.4rem" }}>
+                        ({movie.releaseYear})
+                      </span>
+                    )}
+                  </strong>{" "}
                   {movie.genre && <em>({movie.genre})</em>}
                   {movie.watched && " ✅"}
                   {movie.watched && (
