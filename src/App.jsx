@@ -70,6 +70,8 @@ export default function MovieWatchlist() {
   const [genreMap, setGenreMap] = useState({});
   const [searchResults, setSearchResults] = useState([]);
   const [showSearchModal, setShowSearchModal] = useState(false);
+  const [providers, setProviders] = useState([]);
+  const [showProvidersModal, setShowProvidersModal] = useState(false);
 
 
 
@@ -86,6 +88,20 @@ export default function MovieWatchlist() {
 
   const closeTrailer = () => {
     setTrailerUrl(null);
+  };
+
+  const fetchAndShowProviders = async (tmdbId) => {
+    try {
+      const url = `${TMDB_BASE_URL}/movie/${tmdbId}/watch/providers?api_key=${TMDB_API_KEY}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      const flatrate = data.results?.US?.flatrate || [];
+      setProviders(flatrate);
+      setShowProvidersModal(true);
+    } catch (err) {
+      console.error("Error fetching providers:", err);
+      alert("Couldn't fetch streaming info.");
+    }
   };
 
   const startGuessGame = () => {
@@ -427,6 +443,9 @@ export default function MovieWatchlist() {
                 <button onClick={() => removeMovie(movie.id)} className="trash-icon" title="Delete Movie">
                   <i className="fas fa-trash-alt"></i>
                 </button>
+                <button onClick={() => fetchAndShowProviders(movie.tmdbId)} title="Where to Watch">
+                  <i className="fas fa-tv"></i>
+                </button>
               </div>
             </li>
           ))}
@@ -516,6 +535,7 @@ export default function MovieWatchlist() {
                       poster: movie.poster_path
                         ? `${TMDB_IMAGE_BASE}${movie.poster_path}`
                         : null,
+                      tmdbId: movie.id,
                       watched: false,
                       createdAt: new Date(),
                       rating: 0,
@@ -553,6 +573,32 @@ export default function MovieWatchlist() {
             )}
 
             <button className="guess-close-btn" onClick={() => setShowSearchModal(false)}>Cancel</button>
+          </div>
+        </div>
+      )}
+
+      {showProvidersModal && (
+        <div className="movie-select-modal" onClick={() => setShowProvidersModal(false)}>
+          <div className="movie-select-content" onClick={(e) => e.stopPropagation()}>
+            <h3>Available On</h3>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", justifyContent: "center", padding: "1rem 0" }}>
+              {providers.length > 0 ? (
+                providers.map(p => (
+                  <div key={p.provider_name} style={{ textAlign: "center" }}>
+                    <img
+                      src={`https://image.tmdb.org/t/p/w92${p.logo_path}`}
+                      alt={p.provider_name}
+                      title={p.provider_name}
+                      style={{ height: "50px" }}
+                    />
+                    <div style={{ color: "#ccc", fontSize: "0.85rem" }}>{p.provider_name}</div>
+                  </div>
+                ))
+              ) : (
+                <p style={{ color: "#ccc" }}>Not available on major platforms.</p>
+              )}
+            </div>
+            <button className="guess-close-btn" onClick={() => setShowProvidersModal(false)}>Close</button>
           </div>
         </div>
       )}
