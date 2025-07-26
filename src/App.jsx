@@ -72,6 +72,7 @@ export default function MovieWatchlist() {
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [providers, setProviders] = useState([]);
   const [showProvidersModal, setShowProvidersModal] = useState(false);
+  const [selectedMovie, setSelectedMovie] = useState(null);
 
 
 
@@ -89,6 +90,14 @@ export default function MovieWatchlist() {
   const closeTrailer = () => {
     setTrailerUrl(null);
   };
+
+  const openMovieModal = (movie) => {
+    setSelectedMovie(movie);
+    setNoteInputs(prev => ({ ...prev, [movie.id]: movie.note || "" }));
+    setDateInputs(prev => ({ ...prev, [movie.id]: movie.watchedDate || "" }));
+  };
+
+  const closeMovieModal = () => setSelectedMovie(null);
 
   const fetchAndShowProviders = async (tmdbId) => {
     try {
@@ -345,112 +354,32 @@ export default function MovieWatchlist() {
           onChange={(e) => setSearchTerm(e.target.value)}
           className="search-bar"
         />
-        <button
-          onClick={() => setScrapbookMode(!scrapbookMode)}
-          className="view-toggle-btn"
-          title={scrapbookMode ? "List View" : "Scrapbook View"}
-        >
-          <i className={`fas ${scrapbookMode ? "fa-list" : "fa-th"}`}></i>
-        </button>
       </div>
         
-      {scrapbookMode ? (
-        <div className="scrapbook-grid">
-          {sortedMovies.map((movie) => (
-            <div key={movie.id} className="poster-tile">
-              {movie.poster && <img src={movie.poster} alt={movie.title} className="poster-img" />}
-              <div className="poster-hover">
-                <strong>{movie.title}</strong>
-                {movie.releaseYear && <p>{movie.releaseYear}</p>}
-                {movie.genre && <p>{movie.genre}</p>}
-                {movie.rating > 0 && <p>⭐ {movie.rating}/5</p>}
-                {movie.watchedDate && <p>{movie.watchedDate} 👁️</p>}
-              </div>
+      <div className="scrapbook-grid">
+        {sortedMovies.map((movie) => (
+          <div
+            key={movie.id}
+            className="poster-tile"
+            onClick={() => openMovieModal(movie)}
+          >
+            {movie.poster && (
+              <img
+                src={movie.poster}
+                alt={movie.title}
+                className="poster-img"
+              />
+            )}
+            <div className="poster-hover">
+              <strong>{movie.title}</strong>
+              {movie.releaseYear && <p>{movie.releaseYear}</p>}
+              {movie.genre && <p>{movie.genre}</p>}
+              {movie.rating > 0 && <p>⭐ {movie.rating}/5</p>}
+              {movie.watchedDate && <p>{movie.watchedDate} 👁️</p>}
             </div>
-          ))}
-        </div>
-      ) : (
-        <ul className="movie-list">
-          {sortedMovies.map((movie) => (
-            <li key={movie.id} className="movie-item">
-              <div className="movie-details">
-                {movie.poster && <img src={movie.poster} alt={`${movie.title} poster`} className="poster" />}
-                <div>
-                  <strong>
-                    {movie.title}
-                    {movie.releaseYear && (
-                      <span style={{ color: "#aaa", fontWeight: "normal", marginLeft: "0.4rem" }}>
-                        ({movie.releaseYear})
-                      </span>
-                    )}
-                  </strong>{" "}
-                  {movie.genre && <em>({movie.genre})</em>}
-                  {movie.watched && " ✅"}
-                  {movie.watched && (
-                    <div className="watched-date">
-                      Watched on:
-                      <input
-                        type="date"
-                        value={movie.watchedDate || new Date().toISOString().split("T")[0]}
-                        max={new Date().toISOString().split("T")[0]}
-                        onChange={(e) => {
-                          setDateInputs({ ...dateInputs, [movie.id]: e.target.value });
-                          updateWatchedDate(movie.id, e.target.value);
-                        }}
-                        className="watched-date-picker"
-                      />
-                    </div>
-                  )}
-                  {movie.watched && (
-                    <div className="rating-stars">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <i
-                          key={star}
-                          className={`fa-star ${star <= movie.rating ? "fas" : "far"}`}
-                          onClick={() => updateRating(movie.id, star)}
-                          title={`Rate ${star} star${star > 1 ? "s" : ""}`}
-                        ></i>
-                      ))}
-                    </div>
-                  )}
-                  {movie.watched && (
-                    <details>
-                      <summary className="note-summary">
-                        Notes / Review
-                      </summary>
-                      <textarea
-                        rows="2"
-                        value={noteInputs[movie.id] ?? movie.note ?? ""}
-                        onChange={(e) => setNoteInputs({ ...noteInputs, [movie.id]: e.target.value })}
-                        onBlur={() => updateNote(movie.id, noteInputs[movie.id] ?? "")}
-                        className="note-textarea"
-                        placeholder="Add your note here..."
-                      ></textarea>
-                    </details>
-                  )}
-                </div>
-              </div>
-              <div className="btn-group">
-                <button onClick={() => openTrailer(movie.title)} title="Watch Trailer">
-                  <i className="fas fa-film"></i>
-                </button>
-                <button onClick={() => toggleWishlist(movie.id, movie.wishlist)} title={movie.wishlist ? "Remove from Wishlist" : "Add to Wishlist"}>
-                  <i className={`fas fa-heart`} style={{ color: movie.wishlist ? "deeppink" : "lightgray" }}></i>
-                </button>
-                <button onClick={() => toggleWatched(movie.id, movie.watched)} title={movie.watched ? "Mark as Unwatched" : "Mark as Watched"}>
-                  <i className={`fas ${movie.watched ? "fa-eye" : "fa-eye-slash"}`}></i>
-                </button>
-                <button onClick={() => removeMovie(movie.id)} className="trash-icon" title="Delete Movie">
-                  <i className="fas fa-trash-alt"></i>
-                </button>
-                <button onClick={() => fetchAndShowProviders(movie.tmdbId)} title="Where to Watch">
-                  <i className="fas fa-tv"></i>
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
+          </div>
+        ))}
+      </div>
 
       <div className="secret-wrapper">
         <span className="secret-trigger" onClick={() => setShowSecret(!showSecret)}>
@@ -578,8 +507,8 @@ export default function MovieWatchlist() {
       )}
 
       {showProvidersModal && (
-        <div className="movie-select-modal" onClick={() => setShowProvidersModal(false)}>
-          <div className="movie-select-content" onClick={(e) => e.stopPropagation()}>
+        <div className="show-provider-modal" onClick={() => setShowProvidersModal(false)}>
+          <div className="show-provider-content" onClick={(e) => e.stopPropagation()}>
             <h3>Available On</h3>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", justifyContent: "center", padding: "1rem 0" }}>
               {providers.length > 0 ? (
@@ -599,6 +528,114 @@ export default function MovieWatchlist() {
               )}
             </div>
             <button className="guess-close-btn" onClick={() => setShowProvidersModal(false)}>Close</button>
+          </div>
+        </div>
+      )}
+
+      {selectedMovie && (
+        <div className="movie-select-modal" onClick={closeMovieModal}>
+          <div className="movie-select-content" onClick={(e) => e.stopPropagation()}>
+            <h3>{selectedMovie.title} ({selectedMovie.releaseYear})</h3>
+
+            {selectedMovie.poster && (
+              <img
+                src={selectedMovie.poster}
+                alt={selectedMovie.title}
+                className="poster-img"
+                style={{ maxWidth: "180px", margin: "0 auto", borderRadius: "8px" }}
+              />
+            )}
+
+            <div className="genre-releaseyear">
+              {selectedMovie.genre && <p style={{ marginTop: "0.5rem" }}>{selectedMovie.genre}</p>}
+            </div>
+
+            <div className="modal-btn-group">
+              <button onClick={() => openTrailer(selectedMovie.title)} title="Watch Trailer">
+                <i className="fas fa-film"></i>
+              </button>
+              <button
+                onClick={() => {
+                  const newWishlist = !selectedMovie.wishlist;
+                  toggleWishlist(selectedMovie.id, selectedMovie.wishlist);
+                  setSelectedMovie(prev => ({ ...prev, wishlist: newWishlist }));
+                }}
+                title={selectedMovie.wishlist ? "Remove from Wishlist" : "Add to Wishlist"}
+              >
+                <i className="fas fa-heart" style={{ color: selectedMovie.wishlist ? "deeppink" : "lightgray" }}></i>
+              </button>
+              <button onClick={() => {
+                toggleWatched(selectedMovie.id, selectedMovie.watched);
+                setSelectedMovie(prev => ({ ...prev, watched: !prev.watched }));
+              }} title={selectedMovie.watched ? "Mark as Unwatched" : "Mark as Watched"}>
+                <i className={`fas ${selectedMovie.watched ? "fa-eye" : "fa-eye-slash"}`}></i>
+              </button>
+              <button onClick={() => {
+                removeMovie(selectedMovie.id);
+                closeMovieModal();
+              }} title="Delete Movie">
+                <i className="fas fa-trash-alt" style={{ color: "crimson" }}></i>
+              </button>
+              <button onClick={() => fetchAndShowProviders(selectedMovie.tmdbId)} title="Where to Watch">
+                <i className="fas fa-tv"></i>
+              </button>
+            </div>
+
+            {selectedMovie.watched && (
+              <div style={{ marginTop: "1rem" }}>
+                <div className="watched-meta-center">
+                  <label style={{ marginBottom: "0.3rem" }}>Watched On:</label>
+                  <input
+                    type="date"
+                    value={dateInputs[selectedMovie.id] || new Date().toISOString().split("T")[0]}
+                    max={new Date().toISOString().split("T")[0]}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setDateInputs({ ...dateInputs, [selectedMovie.id]: val });
+                      updateWatchedDate(selectedMovie.id, val);
+                    }}
+                    className="watched-date-picker"
+                    style={{ marginLeft: "0.5rem" }}
+                  />
+
+                  <div className="rating-stars" style={{ marginTop: "0.5rem" }}>
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <i
+                        key={star}
+                        className={`fa-star ${star <= selectedMovie.rating ? "fas" : "far"}`}
+                        onClick={() => {
+                          updateRating(selectedMovie.id, star);
+                          setSelectedMovie({ ...selectedMovie, rating: star });
+                        }}
+                        title={`Rate ${star} star${star > 1 ? "s" : ""}`}
+                      ></i>
+                    ))}
+                  </div>
+                </div>
+
+                <details open style={{ marginTop: "1rem", textAlign: "left" }}>
+                  <summary>Review / Notes</summary>
+                  <textarea
+                    rows="3"
+                    value={noteInputs[selectedMovie.id] ?? ""}
+                    onChange={(e) =>
+                      setNoteInputs({ ...noteInputs, [selectedMovie.id]: e.target.value })
+                    }
+                    onBlur={() =>
+                      updateNote(selectedMovie.id, noteInputs[selectedMovie.id])
+                    }
+                    className="note-textarea"
+                    placeholder="Add your note here..."
+                    style={{ width: "100%", marginTop: "0.5rem" }}
+                  ></textarea>
+                </details>
+              </div>
+            )}
+
+
+            <button onClick={closeMovieModal} className="guess-close-btn" style={{ marginTop: "1rem" }}>
+              Close
+            </button>
           </div>
         </div>
       )}

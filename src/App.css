@@ -328,6 +328,12 @@ textarea {
   border: none;
 }
 
+.watched-meta-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .trailer-modal {
   position: fixed;
   top: 0;
@@ -580,6 +586,19 @@ textarea {
   z-index: 999;
 }
 
+.show-provider-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
 .movie-select-content {
   background: #333;
   color: white;
@@ -592,7 +611,41 @@ textarea {
   box-shadow: 0 0 10px black;
 }
 
+.modal-btn-group {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.8rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.genre-releaseyear {
+  text-align: center;
+}
+
+.movie-select-content p {
+  margin: 0.3rem 0;
+}
+
+.show-provider-content {
+  background: #333;
+  color: white;
+  border-radius: 8px;
+  padding: 1rem;
+  max-height: 90vh;
+  overflow-y: auto;
+  width: 90%;
+  max-width: 700px;
+  box-shadow: 0 0 10px black;
+}
+
 .movie-select-content h3 {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.show-provider-content h3 {
   text-align: center;
   margin-bottom: 1rem;
 }
