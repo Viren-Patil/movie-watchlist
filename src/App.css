@@ -1,9 +1,8 @@
 body {
+  display: block;
+  place-items: unset;
   margin: 0;
   padding: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   min-height: 100vh;
   box-sizing: border-box;
 }
@@ -53,15 +52,14 @@ textarea {
 }
 
 .container {
-  width: 100%;
-  max-width: 800px;
-  padding: 1rem;
-  font-family: sans-serif;
+  width: calc(100% - 2rem);            /* fill the full viewport */
+  max-width: none;        /* remove any hard cap */
+  margin: 2rem 1rem;         /* vertical spacing only */
+  padding: 1rem 2rem;     /* 2rem gutters on left/right, 1rem top/bottom */
+  box-sizing: border-box; /* include that padding in the 100% width */
+  background-color: #444; /* your existing background */
+  border-radius: 8px;     /* keep your corners */
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  background-color: #444;
-  border-radius: 8px;
-  box-sizing: border-box;
-  margin: 2rem 1rem;
 }
 
 .title {
@@ -370,7 +368,7 @@ textarea {
 
 .scrapbook-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 1rem;
   margin-top: 1rem;
 }
@@ -522,10 +520,10 @@ textarea {
 
 @media (max-width: 600px) {
   .container {
-    width: 100%;
+    width: calc(100% - 2rem);
     max-width: 100%;
-    padding: 1rem 1rem;
-    margin: 0 auto;
+    padding: 1rem;
+    margin: 1rem;
     min-width: unset;
     box-sizing: border-box;
   }
