@@ -452,31 +452,38 @@ export default function MovieWatchlist() {
               <div className="scrapbook-grid">
                 {searchResults.map((movie) => (
                   <div key={movie.id} className="poster-tile" onClick={async () => {
-                    const genreNames = (movie.genre_ids || [])
-                      .map(id => genreMap[id])
-                      .filter(Boolean)
-                      .join(", ");
+                      const alreadyExists = movies.some((m) => m.tmdbId === movie.id);
+                      if (alreadyExists) {
+                        alert("This movie is already in your list!");
+                        return;
+                      }
 
-                    await addDoc(movieRef, {
-                      title: movie.title,
-                      genre: genreNames,
-                      releaseYear: movie.release_date?.split("-")[0] || "",
-                      poster: movie.poster_path
-                        ? `${TMDB_IMAGE_BASE}${movie.poster_path}`
-                        : null,
-                      tmdbId: movie.id,
-                      watched: false,
-                      createdAt: new Date(),
-                      rating: 0,
-                      note: "",
-                      watchedDate: "",
-                      wishlist: false
-                    });
+                      const genreNames = (movie.genre_ids || [])
+                        .map(id => genreMap[id])
+                        .filter(Boolean)
+                        .join(", ");
 
-                    setShowSearchModal(false);
-                    setNewMovie("");
-                    setSearchResults([]);
-                  }}>
+                      await addDoc(movieRef, {
+                        title: movie.title,
+                        genre: genreNames,
+                        releaseYear: movie.release_date?.split("-")[0] || "",
+                        poster: movie.poster_path
+                          ? `${TMDB_IMAGE_BASE}${movie.poster_path}`
+                          : null,
+                        tmdbId: movie.id,
+                        watched: false,
+                        createdAt: new Date(),
+                        rating: 0,
+                        note: "",
+                        watchedDate: "",
+                        wishlist: false
+                      });
+
+                      setShowSearchModal(false);
+                      setNewMovie("");
+                      setSearchResults([]);
+                    }}>
+
                     {movie.poster_path ? (
                       <img
                         src={`${TMDB_IMAGE_BASE}${movie.poster_path}`}
