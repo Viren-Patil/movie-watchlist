@@ -520,7 +520,7 @@ textarea {
 
 @media (max-width: 600px) {
   .container {
-    width: calc(100% - 1rem);
+    width: calc(100% - 2rem);
     max-width: 100%;
     padding: 1rem;
     margin: 1rem;
