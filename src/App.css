@@ -52,13 +52,13 @@ textarea {
 }
 
 .container {
-  width: calc(100% - 2rem);            /* fill the full viewport */
-  max-width: none;        /* remove any hard cap */
-  margin: 2rem 1rem;         /* vertical spacing only */
-  padding: 1rem 2rem;     /* 2rem gutters on left/right, 1rem top/bottom */
-  box-sizing: border-box; /* include that padding in the 100% width */
-  background-color: #444; /* your existing background */
-  border-radius: 8px;     /* keep your corners */
+  width: calc(100% - 2rem);
+  max-width: none;
+  margin: 2rem 1rem;
+  padding: 1rem 2rem;
+  box-sizing: border-box;
+  background-color: #444;
+  border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
